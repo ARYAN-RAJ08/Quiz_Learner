@@ -1,20 +1,25 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Eye, EyeOff, Mail, Lock, User, Loader2 } from "lucide-react";
+import Toast from "./Toast";
 import axios from 'axios';
+import { useEffect } from "react";
+
 
 export default function SingUpS() {
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    role: ''
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [toast, setToast] = useState(null);
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -39,17 +44,59 @@ export default function SingUpS() {
       const response = await axios.post('http://localhost:5000/signup', {
         fullName: formData.fullName,
         email: formData.email,
-        password: formData.password
+        password: formData.password,
+        role: formData.role
+      });
+      setToast({
+        type: 'success',
+        message: 'Signup successful! Redirecting...'
       });
 
-      if (response.data.success) {
-        navigate('/login');
-      }
+
+      navigate("/")
     } catch (err) {
       setError(err.response?.data?.message || 'Signup failed');
     } finally {
       setLoading(false);
     }
+  };
+
+  const RoleSelector = ({ selectedRole, onRoleChange, name }) => {
+    const roles = [
+      { value: 'admin', label: 'Admin' },
+      { value: 'student', label: 'Student' }
+    ];
+    return (
+      <div className="flex bg-white/10 rounded-xl p-1 gap-0 border-2 border-white/20 transition-all hover:border-white/40">
+        {roles.map((role) => (
+          <label
+            key={role.value}
+            className={`flex-1 relative cursor-pointer transition-all rounded-lg overflow-hidden ${selectedRole === role.value ? 'z-20' : ''
+              }`}
+          >
+            <input
+              type="radio"
+              name={name}
+              value={role.value}
+              checked={selectedRole === role.value}
+              onChange={onRoleChange}
+              className="hidden"
+            />
+            <span
+              className={`
+                            block text-center text-black py-3 px-4 font-medium text-sm rounded-lg relative z-10 transition-all
+                            ${selectedRole === role.value
+                  ? 'bg-indigo-500 text-white font-semibold shadow-md -translate-y-px'
+                  : 'text-blue-100 hover:text-white hover:bg-white/10'
+                }
+                        `}
+            >
+              {role.label}
+            </span>
+          </label>
+        ))}
+      </div>
+    );
   };
 
   return (
@@ -181,6 +228,15 @@ export default function SingUpS() {
               </div>
             </div>
 
+            <div className="relative">
+              <RoleSelector
+                selectedRole={formData.role}
+                onRoleChange={handleChange}
+                name="role"
+              />
+            </div>
+
+
             {/* Submit Button */}
             <motion.button
               whileHover={{ scale: 1.02 }}
@@ -207,15 +263,6 @@ export default function SingUpS() {
             transition={{ delay: 0.5 }}
             className="text-center mt-8 pt-6 border-t border-gray-200 dark:border-gray-700"
           >
-            <p className="text-gray-600 dark:text-gray-400 text-sm">
-              Already have an account?{' '}
-              <Link
-                to="/login"
-                className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium transition-colors"
-              >
-                Sign in here
-              </Link>
-            </p>
           </motion.div>
         </div>
       </motion.div>

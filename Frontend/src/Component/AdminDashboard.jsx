@@ -30,11 +30,14 @@ export default function AdminDashboard() {
 
   const fetchUsers = async () => {
     try {
-      const token = JSON.parse(localStorage.getItem('token'));
-      const res = await axios.get('http://localhost:5000/admin/users', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setUsers(res.data.users);
+      // const token = JSON.parse(localStorage.getItem('token'));
+      // const header = {
+      //   headers: {
+      //     Authorization: `Bearer ${token}`
+      //   },
+      // }
+      const res = await axios.get('http://localhost:5000/admin/users');
+      setUsers(res.data.data);
     } catch (err) {
       setMsg('Failed to fetch users');
     } finally {
@@ -48,7 +51,7 @@ export default function AdminDashboard() {
       const res = await axios.get('http://localhost:5000/admin/stats', {
         headers: { Authorization: `Bearer ${token}` }
       });
-      setStats(res.data);
+      setStats(res.data.stats);
     } catch (err) {
       console.error('Failed to fetch stats');
     }
@@ -144,6 +147,7 @@ export default function AdminDashboard() {
 
   const handleLogout = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('role')
     navigate('/');
   };
 
@@ -184,7 +188,7 @@ export default function AdminDashboard() {
               Admin Dashboard
             </h1>
           </div>
-          
+
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
             <button
               onClick={() => setDarkMode(!darkMode)}
@@ -205,7 +209,7 @@ export default function AdminDashboard() {
             >
               {darkMode ? '☀️ Light' : '🌙 Dark'}
             </button>
-            
+
             <button
               onClick={() => navigate('/admin/question-papers')}
               style={{
@@ -223,7 +227,7 @@ export default function AdminDashboard() {
             >
               📝 Manage Questions
             </button>
-            
+
             <button
               onClick={handleLogout}
               style={{
@@ -329,7 +333,7 @@ export default function AdminDashboard() {
               ))}
             </div>
           )}
-          
+
           {/* Question Paper Statistics */}
           {questionPaperStats && (
             <div style={{
@@ -392,7 +396,7 @@ export default function AdminDashboard() {
           }}>
             👥 User Management
           </h2>
-          
+
           {/* Search Form */}
           <form onSubmit={handleSearch} style={{
             display: 'grid',

@@ -25,6 +25,9 @@ import StudentProfile from './Component/StudentProfile';
 import PrivateRoute from './Component/PrivateRoute';
 import VerifyEmail from "./Component/VerifyEmail";
 import AdminQuestionPaper from './Component/AdminQuestionPaper';
+import { useState } from "react";
+import AdminProfile from "./Component/AdminProfile";
+import { useEffect } from "react";
 
 // Loading component
 const LoadingSpinner = () => (
@@ -119,6 +122,21 @@ const Unauthorized = () => (
 );
 
 export default function App() {
+  const [Profile, setProfile] = useState(null);
+
+  useEffect(() => {
+    const role = JSON.parse(localStorage.getItem('role'));
+
+    if (role === 'student') {
+      setProfile(
+        <Layout showNavbar>
+          <StudentProfile />
+        </Layout>
+      );
+    } else {
+      setProfile(<AdminProfile />);
+    }
+  }, []);
   const router = createBrowserRouter([
     {
       path: "/",
@@ -148,10 +166,10 @@ export default function App() {
         </Layout>
       )
     },
-    {
-      path: '/login',
-      element: <LogIn />
-    },
+    // {
+    //   path: '/login',
+    //   element: <LogIn />
+    // },
     {
       path: '/signup',
       element: <SingUp />
@@ -230,14 +248,12 @@ export default function App() {
     // Student protected routes
     {
       path: "/profile",
-      element: <PrivateRoute allowedRoles={['student']} />,
+      element: <PrivateRoute allowedRoles={['student', 'admin']} />,
       children: [
         {
           path: "/profile",
           element: (
-            <Layout showNavbar>
-              <StudentProfile />
-            </Layout>
+            Profile
           )
         }
       ]

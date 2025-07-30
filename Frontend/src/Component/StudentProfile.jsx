@@ -1,16 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { 
-  User, 
-  Mail, 
-  Phone, 
-  Lock, 
-  Camera, 
-  Edit3, 
-  Save, 
-  X, 
-  LogOut, 
+import axios from 'axios'
+import {
+  User,
+  Mail,
+  Phone,
+  Lock,
+  Camera,
+  Edit3,
+  Save,
+  X,
+  LogOut,
   Home,
   Activity,
   Calendar,
@@ -22,10 +23,10 @@ import {
 export default function StudentProfile() {
   const navigate = useNavigate();
   const [edit, setEdit] = useState(false);
-  const [form, setForm] = useState({ 
-    fullName: 'John Doe', 
-    email: 'john.doe@example.com',
-    phone: '+1 (555) 123-4567' 
+  const [form, setForm] = useState({
+    fullName: '',
+    email: '',
+    phone: ''
   });
   const [passwords, setPasswords] = useState({ oldPassword: '', newPassword: '' });
   const [msg, setMsg] = useState('');
@@ -84,7 +85,7 @@ export default function StudentProfile() {
   const handlePicUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    
+
     setUploading(true);
     const reader = new FileReader();
     reader.onload = () => {
@@ -97,6 +98,7 @@ export default function StudentProfile() {
 
   const handleLogout = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('role')
     navigate('/');
   };
 
@@ -104,7 +106,7 @@ export default function StudentProfile() {
     const completedTests = activityLog.filter(log => log.score !== null);
     const totalScore = completedTests.reduce((sum, log) => sum + log.score, 0);
     const averageScore = completedTests.length > 0 ? Math.round(totalScore / completedTests.length) : 0;
-    
+
     return {
       totalTests: completedTests.length,
       averageScore,
@@ -113,6 +115,37 @@ export default function StudentProfile() {
   };
 
   const stats = getTestStats();
+
+  useEffect(() => {
+    const fetchUserDetails = async () => {
+      try {
+        const tkn = JSON.parse(localStorage.getItem('token'));
+
+        if (!tkn) {
+          console.log("Token not found");
+          return;
+        }
+
+        // Decode payload safely
+        const base64Url = tkn.split('.')[1]; // should be index 1, not 2
+        if (!base64Url) {
+          console.log("Invalid token format");
+          return;
+        }
+
+        const decodedPayload = JSON.parse(atob(base64Url));
+
+        const res = await axios.post('http://localhost:5000/user-detail', decodedPayload);
+        setForm(res.data.user);
+
+      } catch (err) {
+        console.error("Error fetching user details:", err);
+      }
+    };
+
+    fetchUserDetails();
+  }, []);
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
@@ -128,7 +161,7 @@ export default function StudentProfile() {
                 Student Profile
               </h1>
             </div>
-            
+
             <div className="flex items-center space-x-4">
               <button
                 onClick={() => navigate('/home')}
@@ -137,7 +170,7 @@ export default function StudentProfile() {
                 <Home className="w-4 h-4" />
                 <span>Home</span>
               </button>
-              
+
               <button
                 onClick={handleLogout}
                 className="flex items-center space-x-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
@@ -230,7 +263,7 @@ export default function StudentProfile() {
               <User className="w-5 h-5" />
               <span>Profile Information</span>
             </h2>
-            
+
             <div className="flex items-center space-x-4 mb-6">
               {profilePic ? (
                 <img
@@ -243,7 +276,7 @@ export default function StudentProfile() {
                   <User className="w-8 h-8 text-gray-500 dark:text-gray-400" />
                 </div>
               )}
-              
+
               <div>
                 <label className="cursor-pointer inline-flex items-center space-x-2 px-4 py-2 bg-blue-100 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-900/30 transition-colors">
                   <Camera className="w-4 h-4" />
@@ -258,7 +291,7 @@ export default function StudentProfile() {
                 </label>
               </div>
             </div>
-            
+
             {edit ? (
               <form onSubmit={handleUpdate} className="space-y-4">
                 <div>
@@ -272,7 +305,7 @@ export default function StudentProfile() {
                     className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Email Address
@@ -285,7 +318,7 @@ export default function StudentProfile() {
                     className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Phone Number
@@ -297,7 +330,7 @@ export default function StudentProfile() {
                     className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
-                
+
                 <div className="flex space-x-3">
                   <button
                     type="submit"
@@ -322,17 +355,17 @@ export default function StudentProfile() {
                   <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Full Name</div>
                   <div className="font-semibold text-gray-900 dark:text-white">{form.fullName}</div>
                 </div>
-                
+
                 <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
                   <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Email Address</div>
                   <div className="font-semibold text-gray-900 dark:text-white">{form.email}</div>
                 </div>
-                
+
                 <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
                   <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Phone Number</div>
                   <div className="font-semibold text-gray-900 dark:text-white">{form.phone}</div>
                 </div>
-                
+
                 <button
                   onClick={() => setEdit(true)}
                   className="w-full flex items-center justify-center space-x-2 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors"
@@ -355,7 +388,7 @@ export default function StudentProfile() {
               <Lock className="w-5 h-5" />
               <span>Change Password</span>
             </h2>
-            
+
             <form onSubmit={handleChangePassword} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -369,7 +402,7 @@ export default function StudentProfile() {
                   className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   New Password
@@ -382,7 +415,7 @@ export default function StudentProfile() {
                   className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
-              
+
               <button
                 type="submit"
                 className="w-full flex items-center justify-center space-x-2 px-4 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition-colors"
@@ -405,7 +438,7 @@ export default function StudentProfile() {
             <Activity className="w-5 h-5" />
             <span>Recent Activity</span>
           </h2>
-          
+
           {activityLog.length === 0 ? (
             <div className="text-center py-12 text-gray-500 dark:text-gray-400">
               <Activity className="w-12 h-12 mx-auto mb-4" />

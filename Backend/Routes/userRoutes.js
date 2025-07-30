@@ -21,42 +21,37 @@ router.post('/', async (req, res) => {
 router.post('/signup', async (req, res) => {
     try {
         // Validate required fields
-        const { fullName, email, pNumber, password, role, adminCode } = req.body;
-        if (!fullName || !email || !pNumber || !password) {
+        const { fullName, email, password, role } = req.body;
+
+        if (!fullName || !email || !password || !role) {
             return res.status(400).json({ status: false, message: "All fields are required" });
         }
 
+
         // Check for existing user using findOne instead of find
         const existingUser = await userSchema.findOne({ email });
+
 
         if (existingUser) {
             return res.status(409).json({ status: false, message: "User with this email id already exists" });
         }
 
         // Hash password securely using bcrypt
-        const hashPassword = await bcrypt.hash(password, SALT_ROUNDS); // Use SALT_ROUNDS
+        const hashPassword = await bcrypt.hash(password, SALT_ROUNDS);
 
-        // Only allow 'admin' role creation if a special admin code is provided
-        let userRole = 'student';
-        if (role === 'admin') {
-            if (adminCode === ADMIN_CODE) { // Use env var
-                userRole = 'admin';
-            } else {
-                return res.status(403).json({ status: false, message: "Invalid admin code" });
-            }
-        }
 
         // Create and save new user using newUser.save(), no email verification
         const newUser = new userSchema({
             fullName,
             email,
-            pNumber,
             password: hashPassword,
-            role: userRole
+            role: role
         });
+
         await newUser.save();
 
-        return res.status(201).json({ status: true, message: "Registration successful! You can now log in.", role: userRole });
+
+        return res.status(201).json({ status: true, message: "Registration successful! You can now log in." });
     } catch (err) {
         console.error(err); // Log the error for debugging
         return res.status(500).json({ status: false, message: "Internal server error" });
@@ -77,7 +72,12 @@ router.post('/login', async (req, res) => {
         const user = await userSchema.findOne({ email });
 
         // Check user existence and password validity
-        if (!user) {
+        if (user) {
+            const isMatch = await bcrypt.compare(password, user.password)
+            if (!isMatch) {
+                return res.status(401).json({ status: false, message: "Password is incorrect" })
+            }
+        } else {
             return res.status(401).json({ status: false, message: "User does not exist" })
         }
 
@@ -87,7 +87,7 @@ router.post('/login', async (req, res) => {
         await user.save();
 
         // Generate JWT token with appropriate claims (including role)
-        const token = jwt.sign({ id: user._id, email: user.email, role: user.role }, secretCode, { expiresIn: '1h' }); // Fix expiry
+        const token = jwt.sign({ id: user._id, fullName: user.fullName, email: user.email, role: user.role }, secretCode, { expiresIn: '1h' }); // Fix expiry
 
         // Send successful login response (include role)
         return res.status(200).json({ status: true, message: "Login Successful!", token, role: user.role });
@@ -367,6 +367,7 @@ router.post('/reset-password', async (req, res) => {
 
 // Multer config for profile picture uploads
 const fs = require('fs'); // Add fs for directory check
+
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
         const uploadPath = path.join(__dirname, '../uploads');
@@ -381,7 +382,7 @@ const storage = multer.diskStorage({
     }
 });
 // File filter for images only
-function fileFilter (req, file, cb) {
+function fileFilter(req, file, cb) {
     if (!file.mimetype.startsWith('image/')) {
         return cb(new Error('Only image files are allowed!'), false);
     }
@@ -425,13 +426,52 @@ router.get('/admin/stats', authenticateToken, authorizeRoles('admin'), async (re
             userSchema.countDocuments({ isActive: false }),
             userSchema.countDocuments({ role: 'admin' }),
             userSchema.countDocuments({ role: 'student' }),
-            userSchema.countDocuments({ lastLogin: { $gte: new Date(Date.now() - 7*24*60*60*1000) } })
+            userSchema.countDocuments({ lastLogin: { $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) } })
         ]);
         res.json({ status: true, stats: { total, active, inactive, admins, students, recentLogins } });
     } catch (err) {
         res.status(500).json({ status: false, message: 'Error fetching stats' });
     }
 });
+
+router.get('/admin/users', async (req, res) => {
+    try {
+        // const token = req.headers?.authorization?.split(" ")[1]
+
+
+
+        const users = await userSchema.find()
+
+
+        return res.status(200).json({ status: true, data: users })
+
+
+    } catch (err) {
+        return res.status(500).json({ status: false, message: "User not found" })
+    }
+})
+
+router.post("/user-detail", async (req, res) => {
+    try {
+        const { email } = req.body;
+
+        if (!email) {
+            return res.status(400).json({ status: false, message: "Email is required" });
+        }
+
+        const user = await userSchema.findOne({ email });
+
+        if (!user) {
+            return res.status(404).json({ status: false, message: "User not found" });
+        }
+
+        return res.status(200).json({ status: true, user });
+
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ status: false, message: "Internal Server Error" });
+    }
+})
 
 //------------------------------------Exporting-----------------------------------------
 

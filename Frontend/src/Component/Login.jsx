@@ -17,9 +17,13 @@ export default function LogIn() {
 
   useEffect(() => {
     if (localStorage.getItem('token') !== null) {
-      navigate('/home');
+      if (localStorage.getItem('role') === 'admin') {
+        navigate('/admin')
+      } else {
+        navigate('/home')
+      }
     }
-  }, [navigate]);
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -33,24 +37,22 @@ export default function LogIn() {
     try {
       const res = await axios.post('http://localhost:5000/login', payload);
       localStorage.setItem('token', JSON.stringify(res.data.token));
+      localStorage.setItem('role', JSON.stringify(res.data.role))
 
       setToast({
         type: 'success',
         message: 'Login successful! Redirecting...'
       });
 
-      // Redirect based on role
-      setTimeout(() => {
-        if (res.data.role === 'admin') {
-          navigate('/admin');
-        } else {
-          navigate('/home');
-        }
-      }, 1000);
+      if (res.data.role === 'admin') {
+        navigate('/admin')
+      } else {
+        navigate('/home')
+      }
     } catch (err) {
       const msg = err.response?.data?.message;
       let errorMessage = "Login failed. Please try again.";
-      
+
       if (msg === "User does not exist") {
         errorMessage = "Account not found. Please sign up first.";
       } else if (msg) {
@@ -113,6 +115,13 @@ export default function LogIn() {
               Sign in to your account to continue
             </p>
           </motion.div>
+
+          <div className="max-w-md mx-auto mt-10 border border-blue-900 rounded-lg bg-orange-200 p-4 text-center shadow-md">
+            <p className="text-black text-lg">
+              Use <span className="text-green-700 font-semibold underline">admin@gmail.com</span> as Email Address and{" "}
+              <span className="text-green-700 font-semibold underline">Admin@123</span> as Password
+            </p>
+          </div>
 
           {/* Login Form */}
           <motion.form
@@ -206,15 +215,6 @@ export default function LogIn() {
             transition={{ delay: 0.5 }}
             className="text-center mt-8 pt-6 border-t border-gray-200 dark:border-gray-700"
           >
-            <p className="text-gray-600 dark:text-gray-400 text-sm">
-              Don't have an account?{' '}
-              <Link
-                to="/signup"
-                className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium transition-colors"
-              >
-                Sign up here
-              </Link>
-            </p>
           </motion.div>
         </div>
       </motion.div>
