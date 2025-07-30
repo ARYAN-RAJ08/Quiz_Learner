@@ -36,7 +36,7 @@ export default function AdminDashboard() {
       //     Authorization: `Bearer ${token}`
       //   },
       // }
-      const res = await axios.get('http://localhost:5000/admin/users');
+      const res = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/admin/users`);
       setUsers(res.data.data);
     } catch (err) {
       setMsg('Failed to fetch users');
@@ -48,7 +48,7 @@ export default function AdminDashboard() {
   const fetchStats = async () => {
     try {
       const token = JSON.parse(localStorage.getItem('token'));
-      const res = await axios.get('http://localhost:5000/admin/stats', {
+      const res = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/admin/stats`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setStats(res.data.stats);
@@ -60,7 +60,7 @@ export default function AdminDashboard() {
   const fetchQuestionPaperStats = async () => {
     try {
       const token = JSON.parse(localStorage.getItem('token'));
-      const res = await axios.get('http://localhost:5000/question-papers/stats', {
+      const res = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/question-papers/stats`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setQuestionPaperStats(res.data);
@@ -81,7 +81,7 @@ export default function AdminDashboard() {
     formData.append('profilePic', file);
     try {
       const token = JSON.parse(localStorage.getItem('token'));
-      const res = await axios.post(`http://localhost:5000/admin/users/${userId}/profile-pic`, formData, {
+      const res = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/admin/users/${userId}/profile-pic`, formData, {
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' }
       });
       setUsers(users.map(u => u._id === userId ? { ...u, profilePic: res.data.profilePic } : u));
@@ -95,7 +95,7 @@ export default function AdminDashboard() {
   const handlePromote = async (userId) => {
     try {
       const token = JSON.parse(localStorage.getItem('token'));
-      await axios.put(`http://localhost:5000/admin/users/${userId}/promote`, {}, {
+      await axios.put(`${process.env.REACT_APP_BACKEND_URL}/admin/users/${userId}/promote`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setUsers(users.map(u => u._id === userId ? { ...u, role: 'admin' } : u));
@@ -108,7 +108,7 @@ export default function AdminDashboard() {
   const handleDeactivate = async (userId, isActive) => {
     try {
       const token = JSON.parse(localStorage.getItem('token'));
-      await axios.put(`http://localhost:5000/admin/users/${userId}/toggle-status`, {}, {
+      await axios.put(`${process.env.REACT_APP_BACKEND_URL}/admin/users/${userId}/toggle-status`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setUsers(users.map(u => u._id === userId ? { ...u, isActive: !isActive } : u));
@@ -122,7 +122,7 @@ export default function AdminDashboard() {
     if (!window.confirm('Are you sure you want to delete this user?')) return;
     try {
       const token = JSON.parse(localStorage.getItem('token'));
-      await axios.delete(`http://localhost:5000/admin/users/${userId}`, {
+      await axios.delete(`${process.env.REACT_APP_BACKEND_URL}/admin/users/${userId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setUsers(users.filter(u => u._id !== userId));
@@ -136,7 +136,7 @@ export default function AdminDashboard() {
     setSelectedUser(user);
     try {
       const token = JSON.parse(localStorage.getItem('token'));
-      const res = await axios.get(`http://localhost:5000/admin/users/${user._id}/activity-log`, {
+      const res = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/admin/users/${user._id}/activity-log`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setActivityLog(res.data.activityLog);
@@ -537,7 +537,7 @@ export default function AdminDashboard() {
                     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                       {user.profilePic ? (
                         <img
-                          src={`http://localhost:5000${user.profilePic}`}
+                          src={`${process.env.REACT_APP_BACKEND_URL}${user.profilePic}`}
                           alt="Profile"
                           style={{
                             width: '48px',

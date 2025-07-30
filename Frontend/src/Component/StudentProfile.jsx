@@ -135,7 +135,7 @@ export default function StudentProfile() {
 
         const decodedPayload = JSON.parse(atob(base64Url));
 
-        const res = await axios.post('http://localhost:5000/user-detail', decodedPayload);
+        const res = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/user-detail`, decodedPayload);
         setForm(res.data.user);
 
       } catch (err) {

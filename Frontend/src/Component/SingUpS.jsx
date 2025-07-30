@@ -41,7 +41,7 @@ export default function SingUpS() {
     }
 
     try {
-      const response = await axios.post('http://localhost:5000/signup', {
+      const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/signup`, {
         fullName: formData.fullName,
         email: formData.email,
         password: formData.password,

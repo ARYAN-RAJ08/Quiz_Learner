@@ -35,7 +35,7 @@ export default function LogIn() {
     };
 
     try {
-      const res = await axios.post('http://localhost:5000/login', payload);
+      const res = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/login`, payload);
       localStorage.setItem('token', JSON.stringify(res.data.token));
       localStorage.setItem('role', JSON.stringify(res.data.role))
 

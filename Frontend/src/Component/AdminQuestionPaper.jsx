@@ -60,7 +60,7 @@ export default function AdminQuestionPaper() {
     try {
       setLoading(true);
       const token = getAuthToken();
-      const response = await axios.get('http://localhost:5000/question-papers', {
+      const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/question-papers`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setExistingPapers(response.data.papers);
@@ -89,7 +89,7 @@ export default function AdminQuestionPaper() {
     try {
       setLoading(true);
       const token = getAuthToken();
-      
+
       const paperData = {
         class: selectedClass,
         subject: selectedSubject,
@@ -104,7 +104,7 @@ export default function AdminQuestionPaper() {
         }
       };
 
-      const response = await axios.post('http://localhost:5000/question-paper', paperData, {
+      const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/question-paper`, paperData, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -157,7 +157,7 @@ export default function AdminQuestionPaper() {
               📝 Question Paper Management
             </h1>
           </div>
-          
+
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
             <button
               onClick={() => setDarkMode(!darkMode)}
@@ -175,7 +175,7 @@ export default function AdminQuestionPaper() {
             >
               {darkMode ? '☀️ Light' : '🌙 Dark'}
             </button>
-            
+
             <button
               onClick={() => window.history.back()}
               style={{
@@ -219,7 +219,7 @@ export default function AdminQuestionPaper() {
           }}>
             📚 Create New Question Paper
           </h2>
-          
+
           {/* Message Display */}
           {message.text && (
             <div style={{
@@ -235,7 +235,7 @@ export default function AdminQuestionPaper() {
               {message.text}
             </div>
           )}
-          
+
           {/* Paper Settings */}
           <div style={{
             display: 'grid',
@@ -270,7 +270,7 @@ export default function AdminQuestionPaper() {
                 {CLASSES.map(cls => <option key={cls} value={cls}>{cls}</option>)}
               </select>
             </div>
-            
+
             <div>
               <label style={{
                 display: 'block',
@@ -298,7 +298,7 @@ export default function AdminQuestionPaper() {
                 {SUBJECTS[selectedClass].map(sub => <option key={sub} value={sub}>{sub}</option>)}
               </select>
             </div>
-            
+
             <div>
               <label style={{
                 display: 'block',
@@ -337,7 +337,7 @@ export default function AdminQuestionPaper() {
             }}>
               {editIdx !== null ? '✏️ Edit' : '➕ Add'} Question
             </h3>
-            
+
             <div style={{ display: 'grid', gap: '1rem' }}>
               <input
                 type="text"
@@ -355,7 +355,7 @@ export default function AdminQuestionPaper() {
                   transition: 'all 0.2s ease'
                 }}
               />
-              
+
               <div style={{
                 display: 'grid',
                 gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
@@ -384,7 +384,7 @@ export default function AdminQuestionPaper() {
                   />
                 ))}
               </div>
-              
+
               <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                 <label style={{
                   fontSize: '0.9rem',
@@ -408,7 +408,7 @@ export default function AdminQuestionPaper() {
                   {currentQ.options.map((_, i) => <option key={i} value={i}>{`Option ${i + 1}`}</option>)}
                 </select>
               </div>
-              
+
               <div style={{ display: 'flex', gap: '1rem' }}>
                 <button
                   onClick={handleAddOrUpdate}
@@ -458,7 +458,7 @@ export default function AdminQuestionPaper() {
             }}>
               📋 Questions in Paper ({questions.length})
             </h3>
-            
+
             {questions.length === 0 ? (
               <div style={{
                 textAlign: 'center',

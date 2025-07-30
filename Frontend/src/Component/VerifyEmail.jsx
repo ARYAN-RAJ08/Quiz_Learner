@@ -14,7 +14,7 @@ export default function VerifyEmail() {
             setMessage("No verification token provided.");
             return;
         }
-        axios.get(`http://localhost:5000/verify-email?token=${token}`)
+        axios.get(`${process.env.REACT_APP_BACKEND_URL}/verify-email?token=${token}`)
             .then(res => {
                 setStatus("success");
                 setMessage(res.data.message || "Email verified successfully!");
