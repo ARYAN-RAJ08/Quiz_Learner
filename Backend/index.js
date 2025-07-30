@@ -23,11 +23,16 @@ app.use('/', resultRoutes)
 app.use('/', questionPaperRoutes)
 // app.use('/', adminRoutes) // ✅ NEW
 
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')))
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-mongoose.connect('mongodb://localhost:27017/QuizApp')
-    .then(() => console.log('Connected to MongoDB...'))
-    .catch((err) => console.log("Failed to connect to Database", err))
+(async () => {
+    try {
+        const c = await mongoose.connect(process.env.MONGODB_URI);
+        console.log(`Database connected to ${c.connection.host}`);
+    } catch (err) {
+        console.error("Error connecting to MongoDB:", err);
+    }
+})();
 
 app.listen(port, () => {
     console.log(`Server running at http://localhost:${port}`)
