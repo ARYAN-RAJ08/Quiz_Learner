@@ -9,8 +9,8 @@ const crypto = require('crypto'); // For generating tokens
 const nodemailer = require('nodemailer'); // For sending emails
 require('dotenv').config(); // Add at the top to use environment variables
 
-const secretCode = process.env.JWT_SECRET || "dadsfS@#@$#$#@$1351425431"; // Use env var
-const ADMIN_CODE = process.env.ADMIN_CODE || 'SECRET_ADMIN_CODE'; // Use env var
+const secretCode = process.env.JWT_SECRET; // Use env var
+const ADMIN_CODE = process.env.ADMIN_CODE; // Use env var
 
 router.post('/', async (req, res) => {
     res.json("Server Running")
